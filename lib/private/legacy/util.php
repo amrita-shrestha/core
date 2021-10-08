@@ -1168,7 +1168,14 @@ class OC_Util {
 		// Deny the redirect if the URL contains a @
 		// This prevents unvalidated redirects like ?redirect_url=:user@domain.com
 		if (isset($_REQUEST['redirect_url']) && \strpos($_REQUEST['redirect_url'], '@') === false) {
-			$location = $urlGenerator->getAbsoluteURL(\urldecode($_REQUEST['redirect_url']));
+			$redirect_url = \urldecode($_REQUEST['redirect_url']);
+			if (\stripos($redirect_url, 'https://') !== 0 || \stripos($redirect_url, 'http://') !== 0) {
+				# TODO: see if url is trusted
+				$parts = parse_url($redirect_url);
+				$location = $redirect_url;
+			} else {
+				$location = $urlGenerator->getAbsoluteURL($redirect_url);
+			}
 		} else {
 			$defaultPage = \OC::$server->getAppConfig()->getValue('core', 'defaultpage');
 			if ($defaultPage) {

@@ -47,18 +47,9 @@ class MSOFBAPlugin extends ServerPlugin {
 	public function initialize(\Sabre\DAV\Server $server) {
 		$this->server = $server;
 
-		$request = $this->server->httpRequest;
-
-		# only user agent microsoft office is of interest
-		if (!$request->hasHeader('User-Agent')) {
-			return;
+		if ($this->IsOFBAAccepted()) {
+			$this->server->on('beforeMethod:OPTIONS', [$this, 'httpOptions'], 5);
 		}
-		$userAgent = $request->getHeader('User-Agent');
-		if (strpos($userAgent, 'Microsoft Office') === false) {
-			return;
-		}
-
-		$this->server->on('beforeMethod:OPTIONS', [$this, 'httpOptions'], 5);
 	}
 
 	public function httpOptions(RequestInterface $request, ResponseInterface $response) {
@@ -67,26 +58,39 @@ class MSOFBAPlugin extends ServerPlugin {
 			return true;
 		}
 
-		$successUrl = $this->urlGenerator->linkToRoute('dav.MSOFBA.success');
 		$successUrlAbsolute = $this->urlGenerator->linkToRouteAbsolute('dav.MSOFBA.success');
 
 		# not logged in 403 with MS-OFBA headers - https://docs.microsoft.com/en-us/openspecs/sharepoint_protocols/ms-ofba/c2c4baef-c611-4e7b-9a4c-d009e678e3d2
 		$loginUrl = $this->urlGenerator->linkToRouteAbsolute(
 			'core.login.showLoginForm',
 			[
-				'redirect_url' => $successUrl
+				'redirect_url' => $successUrlAbsolute
 			]
 		);
 
 		$response->setStatus(403);
 		$response->addHeader('X-FORMS_BASED_AUTH_REQUIRED', $loginUrl);
-		# we need to see how the behavior is on this return url ....
 		$response->addHeader('X-FORMS_BASED_AUTH_RETURN_URL', $successUrlAbsolute);
 		$response->addHeader('X-FORMS_BASED_AUTH_DIALOG_SIZE', '800x600');
 		$response->addHeader('DAV', '1, 2, 3');
 		$response->addHeader('MS-Author-Via', 'DAV');
 
 		$this->server->sapi->sendResponse($response);
+		return false;
+	}
+
+	public function IsOFBAAccepted(): bool {
+		$request = $this->server->httpRequest;
+		$ofbaAccepted = $request->getHeader('X-FORMS_BASED_AUTH_ACCEPTED');
+		if ($ofbaAccepted === 't') {
+			return true;
+		}
+
+		# only user agent Microsoft Office is of interest
+		$userAgent = $request->getHeader('User-Agent');
+		if (strpos($userAgent, 'Microsoft Office') >= 0) {
+			return true;
+		}
 		return false;
 	}
 }

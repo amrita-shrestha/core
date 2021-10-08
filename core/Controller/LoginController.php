@@ -26,6 +26,7 @@
 namespace OC\Core\Controller;
 
 use OC\Authentication\TwoFactorAuth\Manager;
+use OC\Security\TrustedDomainHelper;
 use OC\User\Session;
 use OC_App;
 use OC_Util;
@@ -280,15 +281,6 @@ class LoginController extends Controller {
 				]));
 			}
 			return new RedirectResponse($this->urlGenerator->linkToRoute('core.TwoFactorChallenge.selectChallenge'));
-		}
-
-		if ($redirect_url !== null && $this->userSession->isLoggedIn()) {
-			$location = $this->urlGenerator->getAbsoluteURL(\urldecode($redirect_url));
-			// Deny the redirect if the URL contains a @
-			// This prevents unvalidated redirects like ?redirect_url=:user@domain.com
-			if (\strpos($location, '@') === false) {
-				return new RedirectResponse($location);
-			}
 		}
 
 		return new RedirectResponse($this->getDefaultUrl());
