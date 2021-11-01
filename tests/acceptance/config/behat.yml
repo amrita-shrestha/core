@@ -728,6 +728,7 @@ default:
       contexts:
         - FeatureContext: *common_feature_context_params
         - OccContext:
+        - CapabilitiesContext:
         - CalDavContext:
         - CardDavContext:
         - TransferOwnershipContext:
@@ -735,6 +736,7 @@ default:
         - WebDavPropertiesContext:
         - FilesVersionsContext:
         - PublicWebDavContext:
+        - AppConfigurationContext:
 
     cliProvisioning:
       paths:
@@ -1220,6 +1222,29 @@ default:
         - WebUIGeneralContext:
         - WebUILoginContext:
         - WebUIFileActionsMenuContext:
+
+    webUIWithCli:
+      paths:
+        - '%paths.base%/../features/webUIWithCli'
+      context: *common_ldap_suite_context
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - EmailContext:
+        - WebUIFilesContext:
+        - WebUIGeneralContext:
+        - WebUILoginContext:
+        - WebUIPersonalGeneralSettingsContext:
+        - WebUIPersonalSecuritySettingsContext:
+        - WebUIUserContext:
+        - OccContext:
+        - OccUsersGroupsContext:
+        - CapabilitiesContext:
+        - WebUIAdminAppsSettingsContext:
+        - WebUIAdminSharingSettingsContext:
+        - WebUIAdminGeneralSettingsContext:
+        - WebUIAdminStorageSettingsContext:
+        - WebUIHelpAndTipsContext:
+        - WebUISharingContext:
 
   extensions:
     jarnaiz\JUnitFormatter\JUnitFormatterExtension:
